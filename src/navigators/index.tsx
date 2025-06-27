@@ -1,18 +1,97 @@
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import {APP_SCREEN, RootStackParamList} from './screen-type';
-import {HomeScreen, ProfileScreen} from '../screens';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { ThemeProvider, useTheme } from '../components/ThemeProvider';
+import { AddEditHabitScreen } from '../screens/AddEditHabit';
+import { AllHabitsScreen } from '../screens/AllHabits';
+import { CalendarScreen } from '../screens/Calendar';
+import { HabitDetailScreen } from '../screens/HabitDetail';
+import { HabitListScreen } from '../screens/HabitList';
+import { navigationRef } from './navigation-services';
+import { APP_SCREEN, RootStackParamList } from './screen-type';
 
-export const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator();
+
+const TabNavigator: React.FC = () => {
+  const {theme} = useTheme();
+
+  return (
+    <Tab.Navigator
+      screenOptions={({route}) => ({
+        headerShown: false,
+        tabBarIcon: ({color, size}) => {
+          let iconName: string;
+
+          if (route.name === 'HabitsTab') {
+            iconName = 'track-changes';
+          } else if (route.name === 'CalendarTab') {
+            iconName = 'calendar-today';
+          } else {
+            iconName = 'help';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+        },
+      })}>
+      <Tab.Screen
+        name="HabitsTab"
+        component={HabitListScreen}
+        options={{
+          tabBarLabel: 'Habits',
+        }}
+      />
+      <Tab.Screen
+        name="CalendarTab"
+        component={CalendarScreen}
+        options={{
+          tabBarLabel: 'Calendar',
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+const MainNavigator: React.FC = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Stack.Screen name={APP_SCREEN.MAIN_TABS} component={TabNavigator} />
+      <Stack.Screen
+        name={APP_SCREEN.ADD_EDIT_HABIT}
+        component={AddEditHabitScreen}
+        options={{
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.HABIT_DETAIL}
+        component={HabitDetailScreen}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.ALL_HABITS}
+        component={AllHabitsScreen}
+      />
+    </Stack.Navigator>
+  );
+};
 
 export const Navigations: React.FC = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={APP_SCREEN.HOME}>
-        <Stack.Screen name={APP_SCREEN.HOME} component={HomeScreen} />
-        <Stack.Screen name={APP_SCREEN.PROFILE} component={ProfileScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer ref={navigationRef}>
+        <MainNavigator />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 };

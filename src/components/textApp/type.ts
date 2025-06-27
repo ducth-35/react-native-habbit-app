@@ -13,4 +13,9 @@ export type TextProperties = TextProps & {
    * @default default
    */
   preset?: TextPresetNames;
+  /**
+   * Text color override
+   * @default theme.colors.text
+   */
+  color?: string;
 };
