@@ -28,7 +28,9 @@ export const HabitListScreen: React.FC = () => {
   const {theme} = useTheme();
   const {habits, isLoading, actions} = useHabitStore();
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(DateHelpers.getTodayString());
+  const [selectedDate, setSelectedDate] = useState(
+    DateHelpers.getTodayString(),
+  );
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [filter, setFilter] = useState<HabitFilterType>('all');
@@ -70,8 +72,6 @@ export const HabitListScreen: React.FC = () => {
     setShowQuickActions(true);
   };
 
-
-
   const handleAddHabit = () => {
     navigate(APP_SCREEN.ADD_EDIT_HABIT);
   };
@@ -89,18 +89,22 @@ export const HabitListScreen: React.FC = () => {
       <View style={styles.dateSelector}>
         <TouchableOpacity
           style={styles.dateButton}
-          onPress={() => setSelectedDate(DateHelpers.subtractDays(selectedDate, 1))}>
+          onPress={() =>
+            setSelectedDate(DateHelpers.subtractDays(selectedDate, 1))
+          }>
           <Icon name="chevron-left" size={24} color={theme.colors.text} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.dateContainer}
-          onPress={() => navigate(APP_SCREEN.CALENDAR)}>
-          <TextApp preset="txt16SemiBold" style={styles.dateText}>{displayDate}</TextApp>
+        <View style={styles.dateContainer}>
+          <TextApp preset="txt16SemiBold" style={styles.dateText}>
+            {displayDate}
+          </TextApp>
           {!isToday && (
-            <TextApp preset="txt12Regular" style={styles.dateSubtext}>{selectedDate}</TextApp>
+            <TextApp preset="txt12Regular" style={styles.dateSubtext}>
+              {selectedDate}
+            </TextApp>
           )}
-        </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.dateButton}
@@ -130,8 +134,6 @@ export const HabitListScreen: React.FC = () => {
       onButtonPress={handleAddHabit}
     />
   );
-
-
 
   const styles = StyleSheet.create({
     container: {
@@ -230,7 +232,10 @@ export const HabitListScreen: React.FC = () => {
   });
 
   const completedToday = todayHabits.filter(habit => {
-    const completion = actions.getHabitCompletionForDate(habit.id, selectedDate);
+    const completion = actions.getHabitCompletionForDate(
+      habit.id,
+      selectedDate,
+    );
     return completion?.completed;
   }).length;
 
@@ -242,7 +247,9 @@ export const HabitListScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TextApp preset="txt24Bold" style={styles.headerTitle}>My Habits</TextApp>
+        <TextApp preset="txt24Bold" style={styles.headerTitle}>
+          Minhabit
+        </TextApp>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -263,18 +270,31 @@ export const HabitListScreen: React.FC = () => {
       {todayHabits.length > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <TextApp preset="txt18Bold" style={styles.statValue}>{completedToday}</TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>Completed</TextApp>
-          </View>
-          <View style={styles.statItem}>
-            <TextApp preset="txt18Bold" style={styles.statValue}>{todayHabits.length}</TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>Total</TextApp>
+            <TextApp preset="txt18Bold" style={styles.statValue}>
+              {completedToday}
+            </TextApp>
+            <TextApp preset="txt12Regular" style={styles.statLabel}>
+              Completed
+            </TextApp>
           </View>
           <View style={styles.statItem}>
             <TextApp preset="txt18Bold" style={styles.statValue}>
-              {todayHabits.length > 0 ? Math.round((completedToday / todayHabits.length) * 100) : 0}%
+              {todayHabits.length}
             </TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>Success Rate</TextApp>
+            <TextApp preset="txt12Regular" style={styles.statLabel}>
+              Total
+            </TextApp>
+          </View>
+          <View style={styles.statItem}>
+            <TextApp preset="txt18Bold" style={styles.statValue}>
+              {todayHabits.length > 0
+                ? Math.round((completedToday / todayHabits.length) * 100)
+                : 0}
+              %
+            </TextApp>
+            <TextApp preset="txt12Regular" style={styles.statLabel}>
+              Success Rate
+            </TextApp>
           </View>
         </View>
       )}
@@ -318,9 +338,7 @@ export const HabitListScreen: React.FC = () => {
       <FloatingActionButton onPress={handleAddHabit} />
 
       {/* Quick Actions Bottom Sheet */}
-      <BottomSheet
-        visible={showQuickActions}
-        onClose={handleCloseQuickActions}>
+      <BottomSheet visible={showQuickActions} onClose={handleCloseQuickActions}>
         {selectedHabit && (
           <HabitQuickActions
             habit={selectedHabit}

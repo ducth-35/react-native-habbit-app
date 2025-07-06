@@ -88,6 +88,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     },
     titleContainer: {
       flex: 1,
+      marginRight: 5
     },
     title: {
       fontSize: theme.fontSize.md,
