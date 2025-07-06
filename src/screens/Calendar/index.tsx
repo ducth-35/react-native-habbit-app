@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -6,18 +6,19 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useTheme} from '../../components/ThemeProvider';
-import {CalendarView} from '../../components/CalendarView';
-import {HabitCard} from '../../components/HabitCard';
-import {EmptyState} from '../../components/EmptyState';
-import {TextApp} from '../../components';
-import {useHabitStore} from '../../store/useHabitStore';
-import {DateHelpers} from '../../utils/dateHelpers';
-import {goBack} from '../../navigators/navigation-services';
+import { useTheme } from '../../components/ThemeProvider';
+import { CalendarView } from '../../components/CalendarView';
+import { HabitCard } from '../../components/HabitCard';
+import { EmptyState } from '../../components/EmptyState';
+import { TextApp } from '../../components';
+import { useHabitStore } from '../../store/useHabitStore';
+import { DateHelpers } from '../../utils/dateHelpers';
+import { goBack, navigate } from '../../navigators/navigation-services';
+import { APP_SCREEN } from '../../navigators/screen-type';
 
 export const CalendarScreen: React.FC = () => {
-  const {theme} = useTheme();
-  const {actions} = useHabitStore();
+  const { theme } = useTheme();
+  const { actions } = useHabitStore();
   const [selectedDate, setSelectedDate] = useState(DateHelpers.getTodayString());
 
   useEffect(() => {
@@ -134,6 +135,12 @@ export const CalendarScreen: React.FC = () => {
     />
   );
 
+   const handleHabitPress = (habit) => {
+      navigate(APP_SCREEN.HABIT_DETAIL, { habitId: habit.id });
+    };
+  
+ 
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -202,6 +209,7 @@ export const CalendarScreen: React.FC = () => {
                 key={habit.id}
                 habit={habit}
                 date={selectedDate}
+                onPress={() => handleHabitPress(habit)}
                 showStats={false}
               />
             ))

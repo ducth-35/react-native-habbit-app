@@ -1,7 +1,7 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
-import {useTheme} from '../ThemeProvider';
-import {HabitStats as HabitStatsType} from '../../types/habit';
+import { View, StyleSheet } from 'react-native';
+import { useTheme } from '../ThemeProvider';
+import { HabitStats as HabitStatsType } from '../../types/habit';
 import TextApp from '../textApp';
 
 interface HabitStatsProps {
@@ -13,7 +13,7 @@ export const HabitStats: React.FC<HabitStatsProps> = ({
   stats,
   layout = 'grid',
 }) => {
-  const {theme} = useTheme();
+  const { theme } = useTheme();
 
   const statsData = [
     {
@@ -44,13 +44,14 @@ export const HabitStats: React.FC<HabitStatsProps> = ({
       gap: theme.spacing.sm,
     },
     gridContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: theme.spacing.sm,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
     },
     statCard: {
       flex: layout === 'row' ? 1 : undefined,
-      minWidth: layout === 'grid' ? '45%' : undefined,
+      width: layout === 'grid' ? '45%' : undefined,
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.lg,
       padding: theme.spacing.md,

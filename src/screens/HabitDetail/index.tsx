@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -7,25 +7,25 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useTheme} from '../../components/ThemeProvider';
-import {HabitCard} from '../../components/HabitCard';
-import {CalendarView} from '../../components/CalendarView';
-import {HabitStats} from '../../components/HabitStats';
-import {HabitStreak} from '../../components/HabitStreak';
-import {TextApp} from '../../components';
-import {useHabitStore} from '../../store/useHabitStore';
-import {DateHelpers} from '../../utils/dateHelpers';
-import {goBack, navigate} from '../../navigators/navigation-services';
-import {StackScreenProps} from '../../navigators/screen-type';
-import {APP_SCREEN} from '../../navigators/screen-type';
+import { useTheme } from '../../components/ThemeProvider';
+import { HabitCard } from '../../components/HabitCard';
+import { CalendarView } from '../../components/CalendarView';
+import { HabitStats } from '../../components/HabitStats';
+import { HabitStreak } from '../../components/HabitStreak';
+import { TextApp } from '../../components';
+import { useHabitStore } from '../../store/useHabitStore';
+import { DateHelpers } from '../../utils/dateHelpers';
+import { goBack, navigate } from '../../navigators/navigation-services';
+import { StackScreenProps } from '../../navigators/screen-type';
+import { APP_SCREEN } from '../../navigators/screen-type';
 
 type Props = StackScreenProps<APP_SCREEN.HABIT_DETAIL>;
 
-export const HabitDetailScreen: React.FC<Props> = ({route}) => {
-  const {theme} = useTheme();
-  const {actions} = useHabitStore();
+export const HabitDetailScreen: React.FC<Props> = ({ route }) => {
+  const { theme } = useTheme();
+  const { actions } = useHabitStore();
   const [selectedDate, setSelectedDate] = useState(DateHelpers.getTodayString());
-  
+
   const habitId = route?.params?.habitId;
   const habit = habitId ? actions.getHabitById(habitId) : undefined;
   const stats = habitId ? actions.getHabitStats(habitId) : undefined;
@@ -34,33 +34,21 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
     actions.loadData();
   }, [actions]);
 
-  if (!habit) {
-    return (
-      <View style={[styles.container, styles.errorContainer]}>
-        <Icon name="error-outline" size={64} color={theme.colors.error} />
-        <TextApp preset="txt18Bold" style={styles.errorText}>Habit not found</TextApp>
-        <TouchableOpacity style={styles.errorButton} onPress={goBack}>
-          <TextApp preset="txt16SemiBold" style={styles.errorButtonText}>Go Back</TextApp>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const handleEdit = () => {
-    navigate(APP_SCREEN.ADD_EDIT_HABIT, {habit});
+    navigate(APP_SCREEN.ADD_EDIT_HABIT, { habit });
   };
 
   const handleDelete = () => {
     Alert.alert(
       'Delete Habit',
-      `Are you sure you want to delete "${habit.title}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${habit?.title}"? This action cannot be undone.`,
       [
-        {text: 'Cancel', style: 'cancel'},
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            actions.deleteHabit(habit.id);
+            actions.deleteHabit(habit?.id || '');
             goBack();
           },
         },
@@ -69,12 +57,12 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
   };
 
   const handleToggleActive = () => {
-    actions.toggleHabitActive(habit.id);
+    actions.toggleHabitActive(habit?.id || '');
   };
 
   const getRecentCompletions = () => {
-    const completions = actions.getHabitCompletions(habit.id);
-    const last7Days = Array.from({length: 7}, (_, i) => {
+    const completions = actions.getHabitCompletions(habit?.id || '');
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = DateHelpers.subtractDays(DateHelpers.getTodayString(), i);
       const completion = completions.find(c => c.date === date);
       return {
@@ -158,6 +146,8 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
     },
     section: {
       marginBottom: theme.spacing.lg,
+      marginTop: theme.spacing.sm,
+
     },
     sectionTitle: {
       fontSize: theme.fontSize.lg,
@@ -165,6 +155,7 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
       color: theme.colors.text,
       marginHorizontal: theme.spacing.md,
       marginBottom: theme.spacing.md,
+
     },
 
 
@@ -174,19 +165,19 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
       justifyContent: 'space-between',
       paddingHorizontal: theme.spacing.md,
       paddingVertical: theme.spacing.md,
-      backgroundColor: habit.isActive ? theme.colors.success + '20' : theme.colors.error + '20',
+      backgroundColor: habit?.isActive ? theme.colors.success + '20' : theme.colors.error + '20',
       marginHorizontal: theme.spacing.md,
       borderRadius: theme.borderRadius.lg,
     },
     statusText: {
       fontSize: theme.fontSize.md,
       fontWeight: '600',
-      color: habit.isActive ? theme.colors.success : theme.colors.error,
+      color: habit?.isActive ? theme.colors.success : theme.colors.error,
     },
     toggleButton: {
       paddingHorizontal: theme.spacing.md,
       paddingVertical: theme.spacing.sm,
-      backgroundColor: habit.isActive ? theme.colors.error : theme.colors.success,
+      backgroundColor: habit?.isActive ? theme.colors.error : theme.colors.success,
       borderRadius: theme.borderRadius.md,
     },
     toggleButtonText: {
@@ -224,11 +215,11 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
         <View style={styles.section}>
           <View style={styles.statusContainer}>
             <TextApp preset="txt16SemiBold" style={styles.statusText}>
-              Status: {habit.isActive ? 'Active' : 'Inactive'}
+              Status: {habit?.isActive ? 'Active' : 'Inactive'}
             </TextApp>
             <TouchableOpacity style={styles.toggleButton} onPress={handleToggleActive}>
               <TextApp preset="txt14SemiBold" style={styles.toggleButtonText}>
-                {habit.isActive ? 'Deactivate' : 'Activate'}
+                {habit?.isActive ? 'Deactivate' : 'Activate'}
               </TextApp>
             </TouchableOpacity>
           </View>
@@ -243,7 +234,7 @@ export const HabitDetailScreen: React.FC<Props> = ({route}) => {
         )}
 
         {/* Recent Activity */}
-        <View style={styles.section}>
+        <View style={[styles.section, { marginHorizontal: theme.spacing.md }]}>
           <HabitStreak habit={habit} days={7} />
         </View>
 

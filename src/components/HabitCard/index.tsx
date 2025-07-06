@@ -13,7 +13,7 @@ import {DateHelpers} from '../../utils/dateHelpers';
 import TextApp from '../textApp';
 
 interface HabitCardProps {
-  habit: Habit;
+  habit: Habit | undefined;
   date?: string;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -31,9 +31,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   const {actions} = useHabitStore();
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
-  const completion = actions.getHabitCompletionForDate(habit.id, date);
+  const completion = actions.getHabitCompletionForDate(habit?.id ||'', date);
   const isCompleted = completion?.completed || false;
-  const stats = showStats ? actions.getHabitStats(habit.id) : null;
+  const stats = showStats ? actions.getHabitStats(habit?.id || '') : null;
 
   const handleToggleCompletion = () => {
     // Animate the press
@@ -50,7 +50,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       }),
     ]).start();
 
-    actions.toggleHabitCompletion(habit.id, date);
+    actions.toggleHabitCompletion(habit?.id || '', date);
   };
 
   const styles = StyleSheet.create({
@@ -69,7 +69,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       shadowRadius: 3.84,
       elevation: 5,
       borderLeftWidth: 4,
-      borderLeftColor: habit.color,
+      borderLeftColor: habit?.color,
     },
     header: {
       flexDirection: 'row',
@@ -81,7 +81,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: habit.color + '20',
+      backgroundColor: habit?.color + '20',
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: theme.spacing.sm,
@@ -105,12 +105,12 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       height: 32,
       borderRadius: 16,
       borderWidth: 2,
-      borderColor: habit.color,
+      borderColor: habit?.color,
       justifyContent: 'center',
       alignItems: 'center',
     },
     checkButtonCompleted: {
-      backgroundColor: habit.color,
+      backgroundColor: habit?.color,
     },
     statsContainer: {
       flexDirection: 'row',
@@ -139,6 +139,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       paddingVertical: theme.spacing.xs,
       borderRadius: theme.borderRadius.sm,
       marginTop: theme.spacing.xs,
+      alignSelf:'flex-start'
     },
     frequencyText: {
       fontSize: theme.fontSize.xs,
@@ -156,18 +157,18 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         activeOpacity={0.7}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <Icon name={habit.icon} size={20} color={habit.color} />
+            <Icon name={habit?.icon} size={20} color={habit?.color} />
           </View>
 
           <View style={styles.titleContainer}>
-            <TextApp preset="txt16SemiBold" style={styles.title}>{habit.title}</TextApp>
-            {habit.description && (
+            <TextApp preset="txt16SemiBold" style={styles.title}>{habit?.title}</TextApp>
+            {habit?.description && (
               <TextApp preset="txt14SemiBold" style={styles.description} numberOfLines={1}>
-                {habit.description}
+                {habit?.description}
               </TextApp>
             )}
             <View style={styles.frequencyBadge}>
-              <TextApp preset="txt12Regular" style={styles.frequencyText}>{habit.frequency}</TextApp>
+              <TextApp preset="txt12Regular" style={styles.frequencyText}>{habit?.frequency}</TextApp>
             </View>
           </View>
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -6,27 +6,27 @@ import {
   StyleSheet,
   RefreshControl,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useTheme} from '../../components/ThemeProvider';
-import {HabitCard} from '../../components/HabitCard';
-import {EmptyState} from '../../components/EmptyState';
-import {LoadingSpinner} from '../../components/LoadingSpinner';
-import {FloatingActionButton} from '../../components/FloatingActionButton';
-import {BottomSheet} from '../../components/BottomSheet';
-import {HabitQuickActions} from '../../components/HabitQuickActions';
-import {HabitFilter, HabitFilterType} from '../../components/HabitFilter';
-import {HabitStats} from '../../components/HabitStats';
-import {TextApp} from '../../components';
-import {useHabitStore} from '../../store/useHabitStore';
-import {Habit} from '../../types/habit';
-import {navigate, goBack} from '../../navigators/navigation-services';
-import {APP_SCREEN} from '../../navigators/screen-type';
+import { useTheme } from '../../components/ThemeProvider';
+import { HabitCard } from '../../components/HabitCard';
+import { EmptyState } from '../../components/EmptyState';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { BottomSheet } from '../../components/BottomSheet';
+import { HabitQuickActions } from '../../components/HabitQuickActions';
+import { HabitFilter, HabitFilterType } from '../../components/HabitFilter';
+import { HabitStats } from '../../components/HabitStats';
+import { TextApp } from '../../components';
+import { useHabitStore } from '../../store/useHabitStore';
+import { Habit } from '../../types/habit';
+import { navigate, goBack } from '../../navigators/navigation-services';
+import { APP_SCREEN } from '../../navigators/screen-type';
 
 export const AllHabitsScreen: React.FC = () => {
-  const {theme} = useTheme();
-  const {habits, isLoading, actions} = useHabitStore();
-  const [refreshing, setRefreshing] = useState(false);
+  const { theme } = useTheme();
+  const { habits, isLoading, actions } = useHabitStore();
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [filter, setFilter] = useState<HabitFilterType>('all');
@@ -56,21 +56,15 @@ export const AllHabitsScreen: React.FC = () => {
     }
 
     // Apply search
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       habit.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (habit.description && habit.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesFilter && matchesSearch;
   });
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    actions.loadData();
-    setRefreshing(false);
-  };
-
   const handleHabitPress = (habit: Habit) => {
-    navigate(APP_SCREEN.HABIT_DETAIL, {habitId: habit.id});
+    navigate(APP_SCREEN.HABIT_DETAIL, { habitId: habit.id });
   };
 
   const handleHabitLongPress = (habit: Habit) => {
@@ -87,7 +81,7 @@ export const AllHabitsScreen: React.FC = () => {
     setSelectedHabit(null);
   };
 
-  const renderHabitCard = ({item}: {item: Habit}) => (
+  const renderHabitCard = ({ item }: { item: Habit }) => (
     <HabitCard
       habit={item}
       onPress={() => handleHabitPress(item)}
@@ -106,7 +100,7 @@ export const AllHabitsScreen: React.FC = () => {
         />
       );
     }
-    
+
     return (
       <EmptyState
         icon="track-changes"
@@ -194,7 +188,7 @@ export const AllHabitsScreen: React.FC = () => {
         completionRate: acc.completionRate + stats.completionRate,
       };
     },
-    {totalDays: 0, completedDays: 0, currentStreak: 0, longestStreak: 0, completionRate: 0}
+    { totalDays: 0, completedDays: 0, currentStreak: 0, longestStreak: 0, completionRate: 0 }
   );
 
   const overallStats = {
@@ -221,10 +215,10 @@ export const AllHabitsScreen: React.FC = () => {
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Icon 
-          name="search" 
-          size={20} 
-          color={theme.colors.textSecondary} 
+        <Icon
+          name="search"
+          size={20}
+          color={theme.colors.textSecondary}
           style={styles.searchIcon}
         />
         <TextInput
@@ -235,8 +229,8 @@ export const AllHabitsScreen: React.FC = () => {
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity 
-            style={styles.clearButton} 
+          <TouchableOpacity
+            style={styles.clearButton}
             onPress={() => setSearchQuery('')}>
             <Icon name="clear" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
@@ -245,37 +239,33 @@ export const AllHabitsScreen: React.FC = () => {
 
       {/* Filter */}
       <HabitFilter selectedFilter={filter} onFilterChange={setFilter} />
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      {/* Overall Stats */}
-      {activeHabits.length > 0 && (
-        <View style={styles.statsOverview}>
-          <TextApp preset="txt18Bold" style={styles.statsTitle}>
-            Overall Statistics
-          </TextApp>
-          <HabitStats stats={overallStats} layout="grid" />
-        </View>
-      )}
-
-      {/* Habit List */}
-      <View style={styles.listContainer}>
-        {filteredHabits.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <FlatList
-            data={filteredHabits}
-            renderItem={renderHabitCard}
-            keyExtractor={item => item.id}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={theme.colors.primary}
-              />
-            }
-          />
+        {/* Overall Stats */}
+        {activeHabits.length > 0 && (
+          <View style={styles.statsOverview}>
+            <TextApp preset="txt18Bold" style={styles.statsTitle}>
+              Overall Statistics
+            </TextApp>
+            <HabitStats stats={overallStats} layout="grid" />
+          </View>
         )}
-      </View>
+
+        {/* Habit List */}
+        <View style={styles.listContainer}>
+          {filteredHabits.length === 0 ? (
+            renderEmptyState()
+          ) : (
+            <FlatList
+              data={filteredHabits}
+              renderItem={renderHabitCard}
+              keyExtractor={item => item.id}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+            />
+          )}
+        </View>
+      </ScrollView>
 
       {/* FAB */}
       <FloatingActionButton onPress={handleAddHabit} />

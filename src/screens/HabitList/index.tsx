@@ -1,33 +1,33 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useTheme} from '../../components/ThemeProvider';
-import {ThemeToggle} from '../../components/ThemeToggle';
-import {HabitCard} from '../../components/HabitCard';
-import {EmptyState} from '../../components/EmptyState';
-import {LoadingSpinner} from '../../components/LoadingSpinner';
-import {FloatingActionButton} from '../../components/FloatingActionButton';
-import {BottomSheet} from '../../components/BottomSheet';
-import {HabitQuickActions} from '../../components/HabitQuickActions';
-import {HabitFilter, HabitFilterType} from '../../components/HabitFilter';
-import {HabitProgress} from '../../components/HabitProgress';
-import {TextApp} from '../../components';
-import {useHabitStore} from '../../store/useHabitStore';
-import {DateHelpers} from '../../utils/dateHelpers';
-import {Habit} from '../../types/habit';
-import {navigate} from '../../navigators/navigation-services';
-import {APP_SCREEN} from '../../navigators/screen-type';
+import { useTheme } from '../../components/ThemeProvider';
+import { ThemeToggle } from '../../components/ThemeToggle';
+import { HabitCard } from '../../components/HabitCard';
+import { EmptyState } from '../../components/EmptyState';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { BottomSheet } from '../../components/BottomSheet';
+import { HabitQuickActions } from '../../components/HabitQuickActions';
+import { HabitFilter, HabitFilterType } from '../../components/HabitFilter';
+import { HabitProgress } from '../../components/HabitProgress';
+import { TextApp } from '../../components';
+import { useHabitStore } from '../../store/useHabitStore';
+import { DateHelpers } from '../../utils/dateHelpers';
+import { Habit } from '../../types/habit';
+import { navigate } from '../../navigators/navigation-services';
+import { APP_SCREEN } from '../../navigators/screen-type';
 
 export const HabitListScreen: React.FC = () => {
-  const {theme} = useTheme();
-  const {habits, isLoading, actions} = useHabitStore();
-  const [refreshing, setRefreshing] = useState(false);
+  const { theme } = useTheme();
+  const { habits, isLoading, actions } = useHabitStore();
   const [selectedDate, setSelectedDate] = useState(
     DateHelpers.getTodayString(),
   );
@@ -57,14 +57,8 @@ export const HabitListScreen: React.FC = () => {
 
   const todayHabits = filteredHabits;
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    actions.loadData();
-    setRefreshing(false);
-  };
-
   const handleHabitPress = (habit: Habit) => {
-    navigate(APP_SCREEN.HABIT_DETAIL, {habitId: habit.id});
+    navigate(APP_SCREEN.HABIT_DETAIL, { habitId: habit.id });
   };
 
   const handleHabitLongPress = (habit: Habit) => {
@@ -115,7 +109,7 @@ export const HabitListScreen: React.FC = () => {
     );
   };
 
-  const renderHabitCard = ({item}: {item: Habit}) => (
+  const renderHabitCard = ({ item }: { item: Habit }) => (
     <HabitCard
       habit={item}
       date={selectedDate}
@@ -175,7 +169,6 @@ export const HabitListScreen: React.FC = () => {
       paddingVertical: theme.spacing.sm,
       backgroundColor: theme.colors.surface,
       marginHorizontal: theme.spacing.md,
-      marginBottom: theme.spacing.md,
       borderRadius: theme.borderRadius.lg,
     },
     dateButton: {
@@ -267,75 +260,71 @@ export const HabitListScreen: React.FC = () => {
       <HabitFilter selectedFilter={filter} onFilterChange={setFilter} />
 
       {/* Stats */}
-      {todayHabits.length > 0 && (
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <TextApp preset="txt18Bold" style={styles.statValue}>
-              {completedToday}
-            </TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>
-              Completed
-            </TextApp>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {todayHabits.length > 0 && (
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <TextApp preset="txt18Bold" style={styles.statValue}>
+                {completedToday}
+              </TextApp>
+              <TextApp preset="txt12Regular" style={styles.statLabel}>
+                Completed
+              </TextApp>
+            </View>
+            <View style={styles.statItem}>
+              <TextApp preset="txt18Bold" style={styles.statValue}>
+                {todayHabits.length}
+              </TextApp>
+              <TextApp preset="txt12Regular" style={styles.statLabel}>
+                Total
+              </TextApp>
+            </View>
+            <View style={styles.statItem}>
+              <TextApp preset="txt18Bold" style={styles.statValue}>
+                {todayHabits.length > 0
+                  ? Math.round((completedToday / todayHabits.length) * 100)
+                  : 0}
+                %
+              </TextApp>
+              <TextApp preset="txt12Regular" style={styles.statLabel}>
+                Success Rate
+              </TextApp>
+            </View>
           </View>
-          <View style={styles.statItem}>
-            <TextApp preset="txt18Bold" style={styles.statValue}>
-              {todayHabits.length}
-            </TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>
-              Total
-            </TextApp>
-          </View>
-          <View style={styles.statItem}>
-            <TextApp preset="txt18Bold" style={styles.statValue}>
-              {todayHabits.length > 0
-                ? Math.round((completedToday / todayHabits.length) * 100)
-                : 0}
-              %
-            </TextApp>
-            <TextApp preset="txt12Regular" style={styles.statLabel}>
-              Success Rate
-            </TextApp>
-          </View>
-        </View>
-      )}
-
-      {/* Progress Bar */}
-      {todayHabits.length > 0 && (
-        <View style={styles.progressContainer}>
-          <HabitProgress
-            completed={completedToday}
-            total={todayHabits.length}
-            size="large"
-            showPercentage={true}
-            showNumbers={true}
-            color={theme.colors.primary}
-          />
-        </View>
-      )}
-
-      {/* Habit List */}
-      <View style={styles.listContainer}>
-        {todayHabits.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <FlatList
-            data={todayHabits}
-            renderItem={renderHabitCard}
-            keyExtractor={item => item.id}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={theme.colors.primary}
-              />
-            }
-          />
         )}
-      </View>
+
+        {/* Progress Bar */}
+        {todayHabits.length > 0 && (
+          <View style={styles.progressContainer}>
+            <HabitProgress
+              completed={completedToday}
+              total={todayHabits.length}
+              size="large"
+              showPercentage={true}
+              showNumbers={true}
+              color={theme.colors.primary}
+            />
+          </View>
+        )}
+
+        {/* Habit List */}
+        <View style={styles.listContainer}>
+          {todayHabits.length === 0 ? (
+            renderEmptyState()
+          ) : (
+            <FlatList
+              data={todayHabits}
+              renderItem={renderHabitCard}
+              keyExtractor={item => item.id}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+            />
+          )}
+        </View>
+      </ScrollView>
 
       {/* FAB */}
-      <FloatingActionButton onPress={handleAddHabit} />
+      {/* <FloatingActionButton onPress={handleAddHabit} /> */}
 
       {/* Quick Actions Bottom Sheet */}
       <BottomSheet visible={showQuickActions} onClose={handleCloseQuickActions}>

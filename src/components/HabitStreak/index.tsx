@@ -7,7 +7,7 @@ import {Habit} from '../../types/habit';
 import TextApp from '../textApp';
 
 interface HabitStreakProps {
-  habit: Habit;
+  habit: Habit | undefined;
   days?: number;
 }
 
@@ -22,7 +22,7 @@ export const HabitStreak: React.FC<HabitStreakProps> = ({
     const today = DateHelpers.getTodayString();
     const streakDays = Array.from({length: days}, (_, i) => {
       const date = DateHelpers.subtractDays(today, days - 1 - i);
-      const completion = actions.getHabitCompletionForDate(habit.id, date);
+      const completion = actions.getHabitCompletionForDate(habit?.id || '', date);
       const isToday = DateHelpers.isToday(date);
       const dayName = DateHelpers.parseDate(date).toLocaleDateString('en', {
         weekday: 'short',
@@ -66,7 +66,7 @@ export const HabitStreak: React.FC<HabitStreakProps> = ({
       backgroundColor: theme.colors.background,
     },
     dayContainerCompleted: {
-      backgroundColor: habit.color + '20',
+      backgroundColor: habit?.color + '20',
     },
     dayContainerToday: {
       borderWidth: 2,
@@ -80,12 +80,12 @@ export const HabitStreak: React.FC<HabitStreakProps> = ({
       height: 24,
       borderRadius: 12,
       borderWidth: 2,
-      borderColor: habit.color,
+      borderColor: habit?.color,
       justifyContent: 'center',
       alignItems: 'center',
     },
     dayIndicatorCompleted: {
-      backgroundColor: habit.color,
+      backgroundColor: habit?.color,
     },
     checkIcon: {
       color: '#FFFFFF',
