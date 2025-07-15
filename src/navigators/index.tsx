@@ -9,6 +9,7 @@ import { AllHabitsScreen } from '../screens/AllHabits';
 import { CalendarScreen } from '../screens/Calendar';
 import { HabitDetailScreen } from '../screens/HabitDetail';
 import { HabitListScreen } from '../screens/HabitList';
+import { PremiumStoreScreen } from '../screens/PremiumStore';
 import { navigationRef } from './navigation-services';
 import { APP_SCREEN, RootStackParamList } from './screen-type';
 
@@ -81,6 +82,13 @@ const MainNavigator: React.FC = () => {
       <Stack.Screen
         name={APP_SCREEN.ALL_HABITS}
         component={AllHabitsScreen}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.PREMIUM_STORE}
+        component={PremiumStoreScreen}
+        options={{
+          presentation: 'modal',
+        }}
       />
     </Stack.Navigator>
   );

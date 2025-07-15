@@ -157,7 +157,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         activeOpacity={0.7}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <Icon name={habit?.icon} size={20} color={habit?.color} />
+            <Icon name={habit?.icon || 'help'} size={20} color={habit?.color} />
           </View>
 
           <View style={styles.titleContainer}>

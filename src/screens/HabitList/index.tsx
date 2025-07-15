@@ -18,6 +18,7 @@ import { BottomSheet } from '../../components/BottomSheet';
 import { HabitQuickActions } from '../../components/HabitQuickActions';
 import { HabitFilter, HabitFilterType } from '../../components/HabitFilter';
 import { HabitProgress } from '../../components/HabitProgress';
+import { CoinsDisplay } from '../../components/CoinsDisplay';
 import { TextApp } from '../../components';
 import { useHabitStore } from '../../store/useHabitStore';
 import { DateHelpers } from '../../utils/dateHelpers';
@@ -244,6 +245,7 @@ export const HabitListScreen: React.FC = () => {
           Minhabit
         </TextApp>
         <View style={styles.headerActions}>
+          <CoinsDisplay />
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigate(APP_SCREEN.ALL_HABITS)}>

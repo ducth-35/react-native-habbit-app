@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const fontDefault = {
   regular: 'SVN-GilroyRegular',
@@ -28,7 +28,11 @@ export const textPresets = StyleSheet.create({
     color: 'black',
     fontSize: 14,
   },
-
+  txt16Regular: {
+    fontFamily: fontDefault.regular,
+    color: 'black',
+    fontSize: 16,
+  },
   txt16SemiBold: {
     fontFamily: fontDefault.semiBold,
     color: 'black',
@@ -36,6 +40,11 @@ export const textPresets = StyleSheet.create({
   },
   txt16Medium: {
     fontFamily: fontDefault.medium,
+    color: 'black',
+    fontSize: 16,
+  },
+    txt16Bold: {
+    fontFamily: fontDefault.bold,
     color: 'black',
     fontSize: 16,
   },
@@ -49,6 +58,11 @@ export const textPresets = StyleSheet.create({
     color: 'white',
     fontSize: 24,
   },
+  txt32Bold: {
+    fontFamily: fontDefault.bold,
+    color: 'black',
+    fontSize: 32,
+  }
 });
 
 export type TextPresetNames = keyof typeof textPresets;

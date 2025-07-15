@@ -13,6 +13,7 @@ export enum APP_SCREEN {
   ADD_EDIT_HABIT = 'ADD_EDIT_HABIT_SCREEN',
   HABIT_DETAIL = 'HABIT_DETAIL_SCREEN',
   ALL_HABITS = 'ALL_HABITS_SCREEN',
+  PREMIUM_STORE = 'PREMIUM_STORE_SCREEN',
 }
 
 export type RootStackParamList = {
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   [APP_SCREEN.ADD_EDIT_HABIT]: {habit?: Habit} | undefined;
   [APP_SCREEN.HABIT_DETAIL]: {habitId: string};
   [APP_SCREEN.ALL_HABITS]: undefined;
+  [APP_SCREEN.PREMIUM_STORE]: undefined;
 };
 
 export type StackScreenProps<T extends keyof RootStackParamList> =

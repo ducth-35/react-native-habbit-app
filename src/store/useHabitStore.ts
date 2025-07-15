@@ -152,7 +152,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       set({isLoading: true});
 
       try {
-        let habits = HabitStorage.getHabits() || [];
+        let habits: Habit[] = HabitStorage.getHabits() || [];
         const completions = HabitStorage.getHabitCompletions() || [];
 
         // Create sample data if no habits exist

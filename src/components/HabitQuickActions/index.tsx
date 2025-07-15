@@ -157,7 +157,7 @@ export const HabitQuickActions: React.FC<HabitQuickActionsProps> = ({
             {habit.title}
           </TextApp>
           {habit.description && (
-            <TextApp preset="txt14Regular" style={styles.habitDescription}>
+            <TextApp preset="txt16Regular" style={styles.habitDescription}>
               {habit.description}
             </TextApp>
           )}

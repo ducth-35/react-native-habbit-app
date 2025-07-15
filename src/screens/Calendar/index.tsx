@@ -135,7 +135,7 @@ export const CalendarScreen: React.FC = () => {
     />
   );
 
-   const handleHabitPress = (habit) => {
+   const handleHabitPress = (habit: any) => {
       navigate(APP_SCREEN.HABIT_DETAIL, { habitId: habit.id });
     };
   
