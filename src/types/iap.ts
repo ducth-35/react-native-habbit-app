@@ -33,36 +33,36 @@ export interface Purchase {
   originalTransactionIdentifierIOS?: string;
 }
 
-// Product IDs - these should match your Google Play Console configuration
+// Product IDs - these match your Google Play Console configuration
 export const PRODUCT_IDS = {
-  PREMIUM_COINS_2: 'premium_coins_2',   // $0.99 = 2 coins
-  PREMIUM_COINS_4: 'premium_coins_4',   // $1.99 = 4 coins
-  PREMIUM_COINS_6: 'premium_coins_6',   // $4.99 = 6 coins
-  PREMIUM_COINS_8: 'premium_coins_8',   // $9.99 = 8 coins
+  COIN_049: 'coin_049',   // $0.49 = 2 coins
+  COIN_099: 'coin_099',   // $0.99 = 5 coins
+  COIN_199: 'coin_199',   // $1.99 = 12 coins
+  COIN_499: 'coin_499',   // $4.99 = 30 coins
 } as const;
 
 export type ProductId = typeof PRODUCT_IDS[keyof typeof PRODUCT_IDS];
 
 // Coins configuration for each product
 export const COINS_CONFIG = {
-  [PRODUCT_IDS.PREMIUM_COINS_2]: {
+  [PRODUCT_IDS.COIN_049]: {
     coins: 2,
+    priceUSD: 0.49,
+    displayPrice: '$0.49',
+  },
+  [PRODUCT_IDS.COIN_099]: {
+    coins: 5,
     priceUSD: 0.99,
     displayPrice: '$0.99',
   },
-  [PRODUCT_IDS.PREMIUM_COINS_4]: {
-    coins: 4,
+  [PRODUCT_IDS.COIN_199]: {
+    coins: 12,
     priceUSD: 1.99,
     displayPrice: '$1.99',
   },
-  [PRODUCT_IDS.PREMIUM_COINS_6]: {
-    coins: 6,
+  [PRODUCT_IDS.COIN_499]: {
+    coins: 30,
     priceUSD: 4.99,
     displayPrice: '$4.99',
-  },
-  [PRODUCT_IDS.PREMIUM_COINS_8]: {
-    coins: 8,
-    priceUSD: 9.99,
-    displayPrice: '$9.99',
   },
 } as const;

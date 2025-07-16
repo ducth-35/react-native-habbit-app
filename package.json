@@ -22,7 +22,7 @@
     "react": "18.3.1",
     "react-native": "0.77.1",
     "react-native-calendars": "^1.1312.1",
-    "react-native-iap": "^12.16.4",
+    "react-native-iap": "^13.0.0",
     "react-native-mmkv": "^3.2.0",
     "react-native-push-notification": "^8.1.1",
     "react-native-reanimated": "^3.16.7",

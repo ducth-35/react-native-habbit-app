@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   ScrollView,
@@ -8,20 +8,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useTheme } from '../../components/ThemeProvider';
-import { TextApp } from '../../components';
-import { usePremiumStore } from '../../store/usePremiumStore';
-import { COINS_CONFIG, PRODUCT_IDS } from '../../types/iap';
-import { goBack } from '../../navigators/navigation-services';
+import {useTheme} from '../../components/ThemeProvider';
+import {TextApp} from '../../components';
+import {usePremiumStore} from '../../store/usePremiumStore';
+import {COINS_CONFIG, PRODUCT_IDS} from '../../types/iap';
+import {goBack} from '../../navigators/navigation-services';
 
 export const PremiumStoreScreen: React.FC = () => {
-  const { theme } = useTheme();
-  const { coins, purchaseState, products, actions } = usePremiumStore();
+  const {theme} = useTheme();
+  const {coins, purchaseState, products, actions} = usePremiumStore();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     initializeStore();
-    
+
     // Load coins data
     actions.loadCoinsData();
 
@@ -38,7 +38,7 @@ export const PremiumStoreScreen: React.FC = () => {
       Alert.alert(
         'Error',
         'Unable to connect to store. Please try again later.',
-        [{ text: 'OK' }]
+        [{text: 'OK'}],
       );
     }
     setIsInitializing(false);
@@ -54,7 +54,7 @@ export const PremiumStoreScreen: React.FC = () => {
       'Confirm Purchase',
       `Do you want to buy ${coinsConfig.coins} Premium Coins for ${coinsConfig.displayPrice}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        {text: 'Cancel', style: 'cancel'},
         {
           text: 'Buy',
           onPress: async () => {
@@ -63,18 +63,16 @@ export const PremiumStoreScreen: React.FC = () => {
               Alert.alert(
                 'Success!',
                 `You received ${coinsConfig.coins} Premium Coins!`,
-                [{ text: 'OK' }]
+                [{text: 'OK'}],
               );
             } else if (purchaseState.error) {
-              Alert.alert(
-                'Error',
-                purchaseState.error,
-                [{ text: 'OK', onPress: () => actions.clearError() }]
-              );
+              Alert.alert('Error', purchaseState.error, [
+                {text: 'OK', onPress: () => actions.clearError()},
+              ]);
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -85,11 +83,9 @@ export const PremiumStoreScreen: React.FC = () => {
     Alert.alert(
       'Restore Complete',
       'Previous purchases have been checked and restored.',
-      [{ text: 'OK' }]
+      [{text: 'OK'}],
     );
   };
-
-
 
   const formatCoins = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN').format(amount);
@@ -128,7 +124,7 @@ export const PremiumStoreScreen: React.FC = () => {
       marginBottom: 24,
       alignItems: 'center',
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
+      shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 4,
@@ -149,7 +145,7 @@ export const PremiumStoreScreen: React.FC = () => {
       padding: 24,
       marginBottom: 24,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
+      shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 4,
@@ -268,16 +264,12 @@ export const PremiumStoreScreen: React.FC = () => {
           <TextApp preset="txt32Bold" style={styles.coinsAmount}>
             {formatCoins(coins.amount)}
           </TextApp>
-          <TextApp style={styles.coinsLabel}>
-            Premium Coins
-          </TextApp>
+          <TextApp style={styles.coinsLabel}>Premium Coins</TextApp>
         </View>
 
         {/* Purchase Section */}
         <View style={styles.purchaseSection}>
-          <TextApp style={styles.sectionTitle}>
-            Buy Premium Coins
-          </TextApp>
+          <TextApp style={styles.sectionTitle}>Buy Premium Coins</TextApp>
 
           {Object.entries(PRODUCT_IDS).map(([, productId]) => {
             const coinsConfig = COINS_CONFIG[productId];
@@ -302,18 +294,19 @@ export const PremiumStoreScreen: React.FC = () => {
                   style={[
                     styles.purchaseButton,
                     (purchaseState.isLoading || !purchaseState.isInitialized) &&
-                    styles.purchaseButtonDisabled,
+                      styles.purchaseButtonDisabled,
                   ]}
                   onPress={() => handlePurchaseCoins(productId)}
-                  disabled={purchaseState.isLoading || !purchaseState.isInitialized}
-                >
-                  {purchaseState.isLoading ? (
+                  disabled={
+                    purchaseState.isLoading || !purchaseState.isInitialized
+                  }>
+                  {/* {purchaseState.isLoading ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <TextApp preset="txt16Bold" style={styles.purchaseButtonText}>
-                      Buy Now
-                    </TextApp>
-                  )}
+                  ) : ( */}
+                  <TextApp preset="txt16Bold" style={styles.purchaseButtonText}>
+                    Buy Now
+                  </TextApp>
+                  {/* )} */}
                 </TouchableOpacity>
               </View>
             );
@@ -322,8 +315,7 @@ export const PremiumStoreScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.restoreButton}
             onPress={handleRestorePurchases}
-            disabled={purchaseState.isLoading || !purchaseState.isInitialized}
-          >
+            disabled={purchaseState.isLoading || !purchaseState.isInitialized}>
             <TextApp style={styles.restoreButtonText}>
               Restore Purchases
             </TextApp>

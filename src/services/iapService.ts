@@ -9,7 +9,7 @@ import {
   Purchase as RNIAPPurchase,
   ProductPurchase,
 } from 'react-native-iap';
-import { PRODUCT_IDS, Product, Purchase } from '../types/iap';
+import {PRODUCT_IDS, Product, Purchase} from '../types/iap';
 
 interface IAPServiceState {
   isInitialized: boolean;
@@ -48,7 +48,7 @@ export const getIAPProducts = async (): Promise<Product[]> => {
 
   try {
     const productIds = Object.values(PRODUCT_IDS);
-    const products = await getProducts({ skus: productIds });
+    const products = await getProducts({skus: productIds});
 
     return products.map((product: RNIAPProduct) => ({
       productId: product.productId,
@@ -69,8 +69,20 @@ export const purchaseProduct = async (productId: string): Promise<Purchase> => {
     throw new Error('IAP not initialized');
   }
 
+  // Validate product ID
+  const validProductIds = Object.values(PRODUCT_IDS);
+  if (!validProductIds.includes(productId as any)) {
+    throw new Error(
+      `Invalid product ID: ${productId}. Valid IDs: ${validProductIds.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  console.log('Attempting to purchase product:', productId);
+
   try {
-    const purchase = await requestPurchase({ sku: productId });
+    const purchase = await requestPurchase({skus: [productId]});
     console.log('Purchase successful:', purchase);
 
     // Handle the purchase result which can be void, ProductPurchase, or ProductPurchase[]
@@ -92,8 +104,10 @@ export const purchaseProduct = async (productId: string): Promise<Purchase> => {
       isAcknowledgedAndroid: purchaseData.isAcknowledgedAndroid,
       purchaseStateAndroid: purchaseData.purchaseStateAndroid,
       developerPayloadAndroid: purchaseData.developerPayloadAndroid,
-      originalTransactionDateIOS: purchaseData.originalTransactionDateIOS?.toString(),
-      originalTransactionIdentifierIOS: purchaseData.originalTransactionIdentifierIOS,
+      originalTransactionDateIOS:
+        purchaseData.originalTransactionDateIOS?.toString(),
+      originalTransactionIdentifierIOS:
+        purchaseData.originalTransactionIdentifierIOS,
     };
 
     return result;
@@ -106,6 +120,7 @@ export const purchaseProduct = async (productId: string): Promise<Purchase> => {
 export const consumePurchase = async (purchase: Purchase): Promise<void> => {
   try {
     // Use finishTransaction for both platforms with isConsumable flag
+    // Cast to any to avoid type conflicts between our Purchase type and react-native-iap types
     await finishTransaction({
       purchase: purchase as any,
       isConsumable: true,
@@ -137,8 +152,10 @@ export const restorePurchases = async (): Promise<Purchase[]> => {
       isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
       purchaseStateAndroid: purchase.purchaseStateAndroid,
       developerPayloadAndroid: purchase.developerPayloadAndroid,
-      originalTransactionDateIOS: purchase.originalTransactionDateIOS?.toString(),
-      originalTransactionIdentifierIOS: purchase.originalTransactionIdentifierIOS,
+      originalTransactionDateIOS:
+        purchase.originalTransactionDateIOS?.toString(),
+      originalTransactionIdentifierIOS:
+        purchase.originalTransactionIdentifierIOS,
     }));
   } catch (error) {
     console.error('Failed to restore purchases:', error);
