@@ -19,7 +19,7 @@ export const StorageService = {
       const jsonValue = JSON.stringify(value);
       storage.set(key, jsonValue);
     } catch (error) {
-      console.error('Error saving data to storage:', error);
+      console.log('Error saving data to storage:', error);
     }
   },
 
@@ -32,7 +32,7 @@ export const StorageService = {
       }
       return defaultValue;
     } catch (error) {
-      console.error('Error getting data from storage:', error);
+      console.log('Error getting data from storage:', error);
       return defaultValue;
     }
   },
@@ -42,7 +42,7 @@ export const StorageService = {
     try {
       storage.delete(key);
     } catch (error) {
-      console.error('Error removing data from storage:', error);
+      console.log('Error removing data from storage:', error);
     }
   },
 
@@ -51,7 +51,7 @@ export const StorageService = {
     try {
       storage.clearAll();
     } catch (error) {
-      console.error('Error clearing storage:', error);
+      console.log('Error clearing storage:', error);
     }
   },
 

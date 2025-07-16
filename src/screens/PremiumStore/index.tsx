@@ -291,11 +291,7 @@ export const PremiumStoreScreen: React.FC = () => {
                 </View>
 
                 <TouchableOpacity
-                  style={[
-                    styles.purchaseButton,
-                    (purchaseState.isLoading || !purchaseState.isInitialized) &&
-                      styles.purchaseButtonDisabled,
-                  ]}
+                  style={styles.purchaseButton}
                   onPress={() => handlePurchaseCoins(productId)}
                   disabled={
                     purchaseState.isLoading || !purchaseState.isInitialized

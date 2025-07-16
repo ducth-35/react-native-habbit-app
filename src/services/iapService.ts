@@ -26,7 +26,7 @@ export const initializeIAP = async (): Promise<boolean> => {
     console.log('IAP Connection initialized:', result);
     return result;
   } catch (error) {
-    console.error('Failed to initialize IAP connection:', error);
+    console.log('Failed to initialize IAP connection:', error);
     return false;
   }
 };
@@ -37,7 +37,7 @@ export const disconnectIAP = async (): Promise<void> => {
     serviceState.isInitialized = false;
     console.log('IAP Connection ended');
   } catch (error) {
-    console.error('Failed to end IAP connection:', error);
+    console.log('Failed to end IAP connection:', error);
   }
 };
 
@@ -59,7 +59,7 @@ export const getIAPProducts = async (): Promise<Product[]> => {
       localizedPrice: product.localizedPrice,
     }));
   } catch (error) {
-    console.error('Failed to get products:', error);
+    console.log('Failed to get products:', error);
     throw error;
   }
 };
@@ -112,7 +112,7 @@ export const purchaseProduct = async (productId: string): Promise<Purchase> => {
 
     return result;
   } catch (error) {
-    console.error('Purchase failed:', error);
+    console.log('Purchase failed:', error);
     throw error;
   }
 };
@@ -128,7 +128,7 @@ export const consumePurchase = async (purchase: Purchase): Promise<void> => {
 
     console.log('Purchase consumed successfully');
   } catch (error) {
-    console.error('Failed to consume purchase:', error);
+    console.log('Failed to consume purchase:', error);
     throw error;
   }
 };
@@ -158,7 +158,7 @@ export const restorePurchases = async (): Promise<Purchase[]> => {
         purchase.originalTransactionIdentifierIOS,
     }));
   } catch (error) {
-    console.error('Failed to restore purchases:', error);
+    console.log('Failed to restore purchases:', error);
     throw error;
   }
 };

@@ -167,7 +167,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
           isLoading: false,
         });
       } catch (error) {
-        console.error('Error loading habit data:', error);
+        console.log('Error loading habit data:', error);
         set({isLoading: false});
       }
     },

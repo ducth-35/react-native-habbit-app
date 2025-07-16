@@ -15,7 +15,7 @@ export class PremiumStorage {
     try {
       storage.set(STORAGE_KEYS.COINS, JSON.stringify(coins));
     } catch (error) {
-      console.error('Failed to save coins:', error);
+      console.log('Failed to save coins:', error);
     }
   }
 
@@ -27,7 +27,7 @@ export class PremiumStorage {
       }
       return null;
     } catch (error) {
-      console.error('Failed to get coins:', error);
+      console.log('Failed to get coins:', error);
       return null;
     }
   }
@@ -36,7 +36,7 @@ export class PremiumStorage {
     try {
       storage.delete(STORAGE_KEYS.COINS);
     } catch (error) {
-      console.error('Failed to clear coins:', error);
+      console.log('Failed to clear coins:', error);
     }
   }
 
@@ -44,7 +44,7 @@ export class PremiumStorage {
     try {
       storage.clearAll();
     } catch (error) {
-      console.error('Failed to clear all premium data:', error);
+      console.log('Failed to clear all premium data:', error);
     }
   }
 }

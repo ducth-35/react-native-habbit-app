@@ -109,7 +109,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           }
         }));
       } catch (error) {
-        console.error('Failed to disconnect IAP:', error);
+        console.log('Failed to disconnect IAP:', error);
       }
     },
 
@@ -186,7 +186,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             error: errorMessage
           }
         }));
-        console.error('Purchase failed:', error);
+        console.log('Purchase failed:', error);
         return false;
       }
     },
@@ -263,7 +263,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           set({ coins: savedCoins });
         }
       } catch (error) {
-        console.error('Failed to load coins data:', error);
+        console.log('Failed to load coins data:', error);
       }
     },
 
@@ -272,7 +272,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         const { coins } = get();
         PremiumStorage.saveCoins(coins);
       } catch (error) {
-        console.error('Failed to save coins data:', error);
+        console.log('Failed to save coins data:', error);
       }
     },
 
