@@ -10,6 +10,9 @@ import { CalendarScreen } from '../screens/Calendar';
 import { HabitDetailScreen } from '../screens/HabitDetail';
 import { HabitListScreen } from '../screens/HabitList';
 import { PremiumStoreScreen } from '../screens/PremiumStore';
+import { PremiumFeaturesScreen } from '../screens/PremiumFeatures';
+import { PrivacyPolicyScreen } from '../screens/PrivacyPolicy';
+import { AdvancedStatisticsScreen } from '../screens/AdvancedStatistics';
 import { navigationRef } from './navigation-services';
 import { APP_SCREEN, RootStackParamList } from './screen-type';
 
@@ -89,6 +92,18 @@ const MainNavigator: React.FC = () => {
         options={{
           presentation: 'modal',
         }}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.PREMIUM_FEATURES}
+        component={PremiumFeaturesScreen}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.PRIVACY_POLICY}
+        component={PrivacyPolicyScreen}
+      />
+      <Stack.Screen
+        name={APP_SCREEN.ADVANCED_STATISTICS}
+        component={AdvancedStatisticsScreen}
       />
     </Stack.Navigator>
   );

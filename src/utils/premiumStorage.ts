@@ -8,6 +8,7 @@ const storage = new MMKV({
 
 const STORAGE_KEYS = {
   COINS: 'premium_coins',
+  UNLOCKED_FEATURES: 'unlocked_features',
 } as const;
 
 export class PremiumStorage {
@@ -37,6 +38,35 @@ export class PremiumStorage {
       storage.delete(STORAGE_KEYS.COINS);
     } catch (error) {
       console.log('Failed to clear coins:', error);
+    }
+  }
+
+  static saveUnlockedFeatures(data: { unlockedFeatures: string[]; isAdvancedStatsActive: boolean }): void {
+    try {
+      storage.set(STORAGE_KEYS.UNLOCKED_FEATURES, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save unlocked features:', error);
+    }
+  }
+
+  static getUnlockedFeatures(): { unlockedFeatures: string[]; isAdvancedStatsActive: boolean } | null {
+    try {
+      const data = storage.getString(STORAGE_KEYS.UNLOCKED_FEATURES);
+      if (data) {
+        return JSON.parse(data);
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to get unlocked features:', error);
+      return null;
+    }
+  }
+
+  static clearUnlockedFeatures(): void {
+    try {
+      storage.delete(STORAGE_KEYS.UNLOCKED_FEATURES);
+    } catch (error) {
+      console.error('Failed to clear unlocked features:', error);
     }
   }
 

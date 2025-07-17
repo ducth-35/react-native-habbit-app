@@ -12,7 +12,8 @@ import {useTheme} from '../../components/ThemeProvider';
 import {TextApp} from '../../components';
 import {usePremiumStore} from '../../store/usePremiumStore';
 import {COINS_CONFIG, PRODUCT_IDS} from '../../types/iap';
-import {goBack} from '../../navigators/navigation-services';
+import {goBack, navigate} from '../../navigators/navigation-services';
+import {APP_SCREEN} from '../../navigators/screen-type';
 
 export const PremiumStoreScreen: React.FC = () => {
   const {theme} = useTheme();
@@ -76,6 +77,25 @@ export const PremiumStoreScreen: React.FC = () => {
     );
   };
 
+  const handleDebugLogs = () => {
+    const logs = actions.getDebugLogs();
+    Alert.alert(
+      'Debug Logs',
+      'Logs copied to console. Check React Native debugger.',
+      [
+        {text: 'OK'},
+        {
+          text: 'Copy to Clipboard',
+          onPress: () => {
+            // In a real app, you'd use Clipboard API
+            console.log('=== IAP DEBUG LOGS ===');
+            console.log(logs);
+          }
+        }
+      ]
+    );
+  };
+
   const handleRestorePurchases = async () => {
     if (purchaseState.isLoading) return;
 
@@ -112,6 +132,11 @@ export const PremiumStoreScreen: React.FC = () => {
     backButton: {
       flexDirection: 'row',
       alignItems: 'center',
+    },
+    debugButton: {
+      padding: 8,
+      borderRadius: 4,
+      backgroundColor: theme.colors.border,
     },
     content: {
       flex: 1,
@@ -153,6 +178,32 @@ export const PremiumStoreScreen: React.FC = () => {
     sectionTitle: {
       color: theme.colors.text,
       marginBottom: 16,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    viewFeaturesButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    viewFeaturesText: {
+      color: theme.colors.primary,
+      marginRight: 4,
+    },
+    featuresPreview: {
+      marginBottom: 24,
+    },
+    featureItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    featureText: {
+      color: theme.colors.textSecondary,
+      marginLeft: 8,
     },
     productCard: {
       backgroundColor: theme.colors.background,
@@ -220,6 +271,15 @@ export const PremiumStoreScreen: React.FC = () => {
       color: theme.colors.primary,
       fontWeight: '500',
     },
+    privacyButton: {
+      backgroundColor: 'transparent',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    privacyButtonText: {
+      color: theme.colors.textSecondary,
+      fontSize: 12,
+    },
   });
 
   if (isInitializing) {
@@ -253,6 +313,16 @@ export const PremiumStoreScreen: React.FC = () => {
             Premium Store
           </TextApp>
         </TouchableOpacity>
+
+        {/* Debug button - only show in development */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={handleDebugLogs}
+          >
+            <Icon name="bug-report" size={20} color={theme.colors.text} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -265,6 +335,39 @@ export const PremiumStoreScreen: React.FC = () => {
             {formatCoins(coins.amount)}
           </TextApp>
           <TextApp style={styles.coinsLabel}>Premium Coins</TextApp>
+        </View>
+
+        {/* What You Can Do Section */}
+        <View style={styles.purchaseSection}>
+          <View style={styles.sectionHeader}>
+            <TextApp style={styles.sectionTitle}>Advanced Statistics</TextApp>
+            <TouchableOpacity
+              style={styles.viewFeaturesButton}
+              onPress={() => navigate(APP_SCREEN.PREMIUM_FEATURES)}
+            >
+              <TextApp style={styles.viewFeaturesText}>View Details</TextApp>
+              <Icon name="arrow-forward" size={16} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.featuresPreview}>
+            <View style={styles.featureItem}>
+              <Icon name="analytics" size={20} color={theme.colors.primary} />
+              <TextApp style={styles.featureText}>Detailed progress charts</TextApp>
+            </View>
+            <View style={styles.featureItem}>
+              <Icon name="trending-up" size={20} color={theme.colors.primary} />
+              <TextApp style={styles.featureText}>Weekly & monthly analytics</TextApp>
+            </View>
+            <View style={styles.featureItem}>
+              <Icon name="insights" size={20} color={theme.colors.primary} />
+              <TextApp style={styles.featureText}>Habit insights & trends</TextApp>
+            </View>
+            <View style={styles.featureItem}>
+              <Icon name="stars" size={20} color={theme.colors.primary} />
+              <TextApp style={styles.featureText}>Only 2 coins per view</TextApp>
+            </View>
+          </View>
         </View>
 
         {/* Purchase Section */}
@@ -282,7 +385,10 @@ export const PremiumStoreScreen: React.FC = () => {
                       {coinsConfig.coins} Premium Coins
                     </TextApp>
                     <TextApp style={styles.productDescription}>
-                      Unlock premium features and special themes
+                      • Unlock Advanced Statistics{'\n'}
+                      • Detailed progress charts{'\n'}
+                      • Weekly & monthly analytics{'\n'}
+                      • Habit insights & trends
                     </TextApp>
                   </View>
                   <TextApp preset="txt16Bold" style={styles.productPrice}>
@@ -314,6 +420,14 @@ export const PremiumStoreScreen: React.FC = () => {
             disabled={purchaseState.isLoading || !purchaseState.isInitialized}>
             <TextApp style={styles.restoreButtonText}>
               Restore Purchases
+            </TextApp>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.privacyButton}
+            onPress={() => navigate(APP_SCREEN.PRIVACY_POLICY)}>
+            <TextApp style={styles.privacyButtonText}>
+              Privacy Policy
             </TextApp>
           </TouchableOpacity>
         </View>

@@ -161,6 +161,23 @@ export const HabitListScreen: React.FC = () => {
       backgroundColor: theme.colors.surface,
       justifyContent: 'center',
       alignItems: 'center',
+      position: 'relative',
+    },
+    costBadge: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      minWidth: 16,
+      height: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    costBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 10,
+      fontWeight: '600',
     },
     dateSelector: {
       flexDirection: 'row',
@@ -246,6 +263,14 @@ export const HabitListScreen: React.FC = () => {
         </TextApp>
         <View style={styles.headerActions}>
           <CoinsDisplay />
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigate(APP_SCREEN.ADVANCED_STATISTICS)}>
+            <Icon name="analytics" size={24} color={theme.colors.text} />
+            {/* <View style={styles.costBadge}>
+              <TextApp style={styles.costBadgeText}>2</TextApp>
+            </View> */}
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigate(APP_SCREEN.ALL_HABITS)}>
