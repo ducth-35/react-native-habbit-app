@@ -31,6 +31,7 @@ export interface Purchase {
   developerPayloadAndroid?: string;
   originalTransactionDateIOS?: string;
   originalTransactionIdentifierIOS?: string;
+  quantity?: number; // Quantity purchased
 }
 
 // Product IDs - these match your Google Play Console configuration

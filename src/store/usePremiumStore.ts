@@ -26,6 +26,7 @@ interface PremiumState {
   purchaseState: PurchaseState;
   products: Product[];
   processedTransactions: Set<string>; // Track processed transaction IDs
+  lastPurchaseCoins: number; // Track coins from last purchase
   actions: {
     // IAP initialization
     initializeIAP: () => Promise<boolean>;
@@ -35,7 +36,7 @@ interface PremiumState {
     loadProducts: () => Promise<void>;
     
     // Purchase
-    purchaseCoins: (productId: string) => Promise<boolean>;
+    purchaseCoins: (productId: string) => Promise<{success: boolean, coinsAdded?: number}>;
     restorePurchases: () => Promise<void>;
     
     // Coins management
@@ -73,6 +74,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   purchaseState: initialPurchaseState,
   products: [],
   processedTransactions: new Set<string>(),
+  lastPurchaseCoins: 0,
 
   actions: {
     initializeIAP: async (): Promise<boolean> => {
@@ -178,7 +180,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       }
     },
 
-    purchaseCoins: async (productId: string): Promise<boolean> => {
+    purchaseCoins: async (productId: string): Promise<{success: boolean, coinsAdded?: number}> => {
       if (!get().purchaseState.isInitialized) {
         set(state => ({
           purchaseState: {
@@ -186,7 +188,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             error: 'IAP not initialized'
           }
         }));
-        return false;
+        return {success: false};
       }
 
       set(state => ({
@@ -229,7 +231,12 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         }));
 
         console.log('Purchase request completed successfully');
-        return true;
+
+        // Wait a bit for purchase to be processed and return coins added
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const coinsAdded = get().lastPurchaseCoins;
+
+        return {success: true, coinsAdded: coinsAdded > 0 ? coinsAdded : undefined};
       } catch (error) {
         console.log('Purchase failed:', error);
 
@@ -247,14 +254,14 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
               purchaseState: { ...state.purchaseState, isLoading: false }
             }));
 
-            return true; // Consider it successful - don't show error to user
+            return {success: true}; // Consider it successful - don't show error to user
           } catch (pendingError) {
             console.log('Failed to process pending purchases:', pendingError);
             // Still return true to avoid showing error popup
             set(state => ({
               purchaseState: { ...state.purchaseState, isLoading: false }
             }));
-            return true;
+            return {success: true};
           }
         }
 
@@ -267,7 +274,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           }
         }));
 
-        return false;
+        return {success: false};
       }
     },
 
@@ -288,7 +295,8 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         for (const purchase of purchases) {
           const coinsConfig = COINS_CONFIG[purchase.productId as keyof typeof COINS_CONFIG];
           if (coinsConfig) {
-            totalCoinsToAdd += coinsConfig.coins;
+            const quantity = purchase.quantity || 1;
+            totalCoinsToAdd += coinsConfig.coins * quantity;
           }
         }
 
@@ -415,9 +423,25 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           processedTransactions: new Set([...state.processedTransactions, transactionKey])
         }));
 
+        // Calculate total coins based on quantity
+        const quantity = purchase.quantity || 1;
+        const totalCoins = coinsConfig.coins * quantity;
+
         // Add coins to user's balance
-        get().actions.addCoins(coinsConfig.coins);
-        iapLogger.coinsAdded(coinsConfig.coins, purchase.productId, purchase.transactionId);
+        get().actions.addCoins(totalCoins);
+
+        // Track last purchase coins
+        set(() => ({
+          lastPurchaseCoins: totalCoins
+        }));
+
+        iapLogger.coinsAdded(totalCoins, purchase.productId, purchase.transactionId);
+        iapLogger.info('STORE', `Added ${totalCoins} coins (${coinsConfig.coins} x ${quantity})`, {
+          productId: purchase.productId,
+          baseCoins: coinsConfig.coins,
+          quantity: quantity,
+          totalCoins: totalCoins
+        });
 
         // Consume the purchase so it can be bought again
         await consumePurchase(purchase);

@@ -59,11 +59,12 @@ export const PremiumStoreScreen: React.FC = () => {
         {
           text: 'Buy',
           onPress: async () => {
-            const success = await actions.purchaseCoins(productId);
-            if (success) {
+            const result = await actions.purchaseCoins(productId);
+            if (result.success) {
+              const coinsReceived = result.coinsAdded || coinsConfig.coins;
               Alert.alert(
                 'Success!',
-                `You received ${coinsConfig.coins} Premium Coins!`,
+                `You received ${coinsReceived} Premium Coins!`,
                 [{text: 'OK'}],
               );
             } else if (purchaseState.error) {

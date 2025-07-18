@@ -166,6 +166,24 @@ export const purchaseProduct = async (
       throw new Error('Purchase missing product ID');
     }
 
+    // Parse quantity from purchase data
+    let quantity = 1; // Default to 1
+    try {
+      // For Android, quantity might be in dataAndroid JSON
+      if (purchaseData.dataAndroid) {
+        const androidData = JSON.parse(purchaseData.dataAndroid);
+        quantity = androidData.quantity || 1;
+      }
+      // For iOS, check if quantity is available directly
+      if ((purchaseData as any).quantity) {
+        quantity = (purchaseData as any).quantity;
+      }
+    } catch (error) {
+      iapLogger.warn('PURCHASE', 'Failed to parse quantity from purchase data', error);
+    }
+
+    iapLogger.info('PURCHASE', `Parsed quantity: ${quantity} for product ${productId}`);
+
     // Convert to our Purchase type
     const result: Purchase = {
       productId: purchaseData.productId,
@@ -182,6 +200,7 @@ export const purchaseProduct = async (
         purchaseData.originalTransactionDateIOS?.toString(),
       originalTransactionIdentifierIOS:
         purchaseData.originalTransactionIdentifierIOS,
+      quantity: quantity,
     };
 
     // Final validation
@@ -323,22 +342,41 @@ export const restorePurchases = async (): Promise<Purchase[]> => {
   try {
     const purchases = await getAvailablePurchases();
 
-    return purchases.map((purchase: RNIAPPurchase) => ({
-      productId: purchase.productId,
-      transactionId: purchase.transactionId || '',
-      transactionDate: purchase.transactionDate || Date.now(),
-      transactionReceipt: purchase.transactionReceipt || '',
-      purchaseToken: purchase.purchaseToken,
-      dataAndroid: purchase.dataAndroid,
-      signatureAndroid: purchase.signatureAndroid,
-      isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
-      purchaseStateAndroid: purchase.purchaseStateAndroid,
-      developerPayloadAndroid: purchase.developerPayloadAndroid,
-      originalTransactionDateIOS:
-        purchase.originalTransactionDateIOS?.toString(),
-      originalTransactionIdentifierIOS:
-        purchase.originalTransactionIdentifierIOS,
-    }));
+    return purchases.map((purchase: RNIAPPurchase) => {
+      // Parse quantity from purchase data
+      let quantity = 1; // Default to 1
+      try {
+        // For Android, quantity might be in dataAndroid JSON
+        if (purchase.dataAndroid) {
+          const androidData = JSON.parse(purchase.dataAndroid);
+          quantity = androidData.quantity || 1;
+        }
+        // For iOS, check if quantity is available directly
+        if ((purchase as any).quantity) {
+          quantity = (purchase as any).quantity;
+        }
+      } catch (error) {
+        console.log('Failed to parse quantity from restored purchase data:', error);
+      }
+
+      return {
+        productId: purchase.productId,
+        transactionId: purchase.transactionId || '',
+        transactionDate: purchase.transactionDate || Date.now(),
+        transactionReceipt: purchase.transactionReceipt || '',
+        purchaseToken: purchase.purchaseToken,
+        dataAndroid: purchase.dataAndroid,
+        signatureAndroid: purchase.signatureAndroid,
+        isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
+        purchaseStateAndroid: purchase.purchaseStateAndroid,
+        developerPayloadAndroid: purchase.developerPayloadAndroid,
+        originalTransactionDateIOS:
+          purchase.originalTransactionDateIOS?.toString(),
+        originalTransactionIdentifierIOS:
+          purchase.originalTransactionIdentifierIOS,
+        quantity: quantity,
+      };
+    });
   } catch (error) {
     console.log('Failed to restore purchases:', error);
     throw error;
@@ -364,6 +402,24 @@ const setupPurchaseListeners = () => {
       });
 
       try {
+        // Parse quantity from purchase data
+        let quantity = 1; // Default to 1
+        try {
+          // For Android, quantity might be in dataAndroid JSON
+          if (purchase.dataAndroid) {
+            const androidData = JSON.parse(purchase.dataAndroid);
+            quantity = androidData.quantity || 1;
+          }
+          // For iOS, check if quantity is available directly
+          if ((purchase as any).quantity) {
+            quantity = (purchase as any).quantity;
+          }
+        } catch (error) {
+          iapLogger.warn('LISTENER', 'Failed to parse quantity from purchase data', error);
+        }
+
+        iapLogger.info('LISTENER', `Parsed quantity: ${quantity} for product ${purchase.productId}`);
+
         // Convert to our Purchase type
         const convertedPurchase: Purchase = {
           productId: purchase.productId,
@@ -380,6 +436,7 @@ const setupPurchaseListeners = () => {
             purchase.originalTransactionDateIOS?.toString(),
           originalTransactionIdentifierIOS:
             purchase.originalTransactionIdentifierIOS,
+          quantity: quantity,
         };
 
         // Immediately acknowledge the purchase to prevent auto-refund
