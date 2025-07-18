@@ -16,6 +16,7 @@ import {
 } from 'react-native-iap';
 import {PRODUCT_IDS, Product, Purchase} from '../types/iap';
 import {iapLogger} from '../utils/iapLogger';
+import {Alert} from 'react-native';
 
 interface IAPServiceState {
   isInitialized: boolean;
@@ -85,7 +86,25 @@ export const getIAPProducts = async (): Promise<Product[]> => {
 
   try {
     const productIds = Object.values(PRODUCT_IDS);
+    iapLogger.info('PRODUCTS', `Fetching products from store: ${productIds.join(', ')}`);
+
     const products = await getProducts({skus: productIds});
+
+    iapLogger.info('PRODUCTS', `Successfully fetched ${products.length} products from store`, {
+      productIds: products.map(p => p.productId),
+      requestedIds: productIds
+    });
+
+    if (products.length === 0) {
+      throw new Error('No products returned from store. Check your product IDs in the store console.');
+    }
+
+    // Check if all requested products were returned
+    const returnedIds = products.map(p => p.productId);
+    const missingIds = productIds.filter(id => !returnedIds.includes(id));
+    if (missingIds.length > 0) {
+      iapLogger.warn('PRODUCTS', `Some products not found in store: ${missingIds.join(', ')}`);
+    }
 
     return products.map((product: RNIAPProduct) => ({
       productId: product.productId,
@@ -96,12 +115,15 @@ export const getIAPProducts = async (): Promise<Product[]> => {
       localizedPrice: product.localizedPrice,
     }));
   } catch (error) {
-    console.log('Failed to get products:', error);
+    iapLogger.error('PRODUCTS', 'Failed to get products from store', error);
     throw error;
   }
 };
 
-export const purchaseProduct = async (productId: string, retryCount = 0): Promise<Purchase> => {
+export const purchaseProduct = async (
+  productId: string,
+  retryCount = 0,
+): Promise<Purchase> => {
   const maxRetries = 2;
 
   if (!serviceState.isInitialized) {
@@ -118,7 +140,12 @@ export const purchaseProduct = async (productId: string, retryCount = 0): Promis
     );
   }
 
-  iapLogger.info('PURCHASE', `Attempting to purchase product (attempt ${retryCount + 1}/${maxRetries + 1}): ${productId}`);
+  iapLogger.info(
+    'PURCHASE',
+    `Attempting to purchase product (attempt ${retryCount + 1}/${
+      maxRetries + 1
+    }): ${productId}`,
+  );
 
   try {
     const purchase = await requestPurchase({skus: [productId]});
@@ -129,7 +156,10 @@ export const purchaseProduct = async (productId: string, retryCount = 0): Promis
     }
 
     const purchaseData = purchase as ProductPurchase;
-    iapLogger.purchaseSuccess(productId, purchaseData.transactionId || 'unknown');
+    iapLogger.purchaseSuccess(
+      productId,
+      purchaseData.transactionId || 'unknown',
+    );
 
     // Validate purchase data
     if (!purchaseData.productId) {
@@ -170,14 +200,20 @@ export const purchaseProduct = async (productId: string, retryCount = 0): Promis
       // Don't retry for "already own" errors
       if (!errorMessage.includes('You already own this item')) {
         // Retry for network or temporary errors
-        if (errorMessage.includes('network') ||
-            errorMessage.includes('timeout') ||
-            errorMessage.includes('connection') ||
-            errorMessage.includes('Invalid purchase result')) {
+        if (
+          errorMessage.includes('network') ||
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('connection') ||
+          errorMessage.includes('Invalid purchase result')
+        ) {
+          iapLogger.info(
+            'PURCHASE',
+            `Retrying purchase in ${(retryCount + 1) * 1000}ms...`,
+          );
 
-          iapLogger.info('PURCHASE', `Retrying purchase in ${(retryCount + 1) * 1000}ms...`);
-
-          await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000));
+          await new Promise(resolve =>
+            setTimeout(resolve, (retryCount + 1) * 1000),
+          );
           return purchaseProduct(productId, retryCount + 1);
         }
       }
@@ -188,7 +224,9 @@ export const purchaseProduct = async (productId: string, retryCount = 0): Promis
 };
 
 // Acknowledge purchase for Android (required to prevent auto-refund)
-export const acknowledgePurchase = async (purchase: Purchase): Promise<void> => {
+export const acknowledgePurchase = async (
+  purchase: Purchase,
+): Promise<void> => {
   try {
     // Only acknowledge on Android if not already acknowledged
     if (purchase.purchaseToken && purchase.isAcknowledgedAndroid === false) {
@@ -196,25 +234,36 @@ export const acknowledgePurchase = async (purchase: Purchase): Promise<void> => 
 
       await acknowledgePurchaseAndroid({
         token: purchase.purchaseToken,
-        developerPayload: purchase.developerPayloadAndroid
+        developerPayload: purchase.developerPayloadAndroid,
       });
 
       iapLogger.acknowledgeSuccess(purchase.productId, purchase.transactionId);
     } else {
-      iapLogger.info('ACKNOWLEDGE', `Purchase already acknowledged or not Android`, {
-        productId: purchase.productId,
-        transactionId: purchase.transactionId,
-        isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
-        hasPurchaseToken: !!purchase.purchaseToken
-      });
+      iapLogger.info(
+        'ACKNOWLEDGE',
+        `Purchase already acknowledged or not Android`,
+        {
+          productId: purchase.productId,
+          transactionId: purchase.transactionId,
+          isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
+          hasPurchaseToken: !!purchase.purchaseToken,
+        },
+      );
     }
   } catch (error) {
-    iapLogger.acknowledgeFailed(purchase.productId, purchase.transactionId, error);
+    iapLogger.acknowledgeFailed(
+      purchase.productId,
+      purchase.transactionId,
+      error,
+    );
     throw error;
   }
 };
 
-export const consumePurchase = async (purchase: Purchase, retryCount = 0): Promise<void> => {
+export const consumePurchase = async (
+  purchase: Purchase,
+  retryCount = 0,
+): Promise<void> => {
   const maxRetries = 3;
 
   try {
@@ -245,13 +294,19 @@ export const consumePurchase = async (purchase: Purchase, retryCount = 0): Promi
       const errorMessage = error instanceof Error ? error.message : '';
 
       // Retry for network or temporary errors
-      if (errorMessage.includes('network') ||
-          errorMessage.includes('timeout') ||
-          errorMessage.includes('connection')) {
+      if (
+        errorMessage.includes('network') ||
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('connection')
+      ) {
+        iapLogger.info(
+          'CONSUME',
+          `Retrying consume purchase in ${(retryCount + 1) * 1000}ms...`,
+        );
 
-        iapLogger.info('CONSUME', `Retrying consume purchase in ${(retryCount + 1) * 1000}ms...`);
-
-        await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000));
+        await new Promise(resolve =>
+          setTimeout(resolve, (retryCount + 1) * 1000),
+        );
         return consumePurchase(purchase, retryCount + 1);
       }
     }
@@ -305,7 +360,7 @@ const setupPurchaseListeners = () => {
         productId: purchase.productId,
         transactionId: purchase.transactionId,
         purchaseStateAndroid: purchase.purchaseStateAndroid,
-        isAcknowledgedAndroid: purchase.isAcknowledgedAndroid
+        isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
       });
 
       try {
@@ -321,15 +376,21 @@ const setupPurchaseListeners = () => {
           isAcknowledgedAndroid: purchase.isAcknowledgedAndroid,
           purchaseStateAndroid: purchase.purchaseStateAndroid,
           developerPayloadAndroid: purchase.developerPayloadAndroid,
-          originalTransactionDateIOS: purchase.originalTransactionDateIOS?.toString(),
-          originalTransactionIdentifierIOS: purchase.originalTransactionIdentifierIOS,
+          originalTransactionDateIOS:
+            purchase.originalTransactionDateIOS?.toString(),
+          originalTransactionIdentifierIOS:
+            purchase.originalTransactionIdentifierIOS,
         };
 
         // Immediately acknowledge the purchase to prevent auto-refund
         try {
           await acknowledgePurchase(convertedPurchase);
         } catch (ackError) {
-          iapLogger.error('LISTENER', 'Failed to acknowledge purchase in listener', ackError);
+          iapLogger.error(
+            'LISTENER',
+            'Failed to acknowledge purchase in listener',
+            ackError,
+          );
           // Continue processing even if acknowledge fails
         }
 
@@ -340,7 +401,7 @@ const setupPurchaseListeners = () => {
       } catch (error) {
         iapLogger.error('LISTENER', 'Error processing purchase update', error);
       }
-    }
+    },
   );
 
   // Purchase error listener
@@ -352,14 +413,14 @@ const setupPurchaseListeners = () => {
       if (purchaseErrorCallback) {
         purchaseErrorCallback(error);
       }
-    }
+    },
   );
 };
 
 // Register callbacks for purchase events
 export const setPurchaseCallbacks = (
   onPurchase: PurchaseCallback,
-  onError: PurchaseErrorCallback
+  onError: PurchaseErrorCallback,
 ) => {
   purchaseCallback = onPurchase;
   purchaseErrorCallback = onError;

@@ -53,6 +53,7 @@ interface PremiumState {
     clearError: () => void;
     resetPurchaseState: () => void;
     getDebugLogs: () => string;
+    forceReloadProducts: () => Promise<void>;
   };
 }
 
@@ -98,7 +99,13 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           );
 
           // Load products after successful initialization
-          await get().actions.loadProducts();
+          try {
+            await get().actions.loadProducts();
+            iapLogger.info('INIT', `Products loaded successfully: ${get().products.length} products`);
+          } catch (error) {
+            iapLogger.error('INIT', 'Failed to load products during initialization', error);
+            // Don't fail initialization if products fail to load
+          }
 
           // Check for any pending purchases that need to be processed
           await get().actions.processPendingPurchases();
@@ -187,6 +194,28 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       }));
 
       try {
+        // Always reload products before purchase to ensure they're fresh
+        iapLogger.info('PURCHASE', 'Reloading products before purchase...');
+        await get().actions.loadProducts();
+
+        // Small delay to ensure react-native-iap has processed the products
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Check if products were loaded successfully
+        const currentProducts = get().products;
+        if (currentProducts.length === 0) {
+          throw new Error('No products available from store. Check your internet connection and store configuration.');
+        }
+
+        // Verify the specific product exists
+        const productExists = currentProducts.some(p => p.productId === productId);
+        if (!productExists) {
+          const availableProducts = currentProducts.map(p => p.productId).join(', ');
+          throw new Error(`Product ${productId} not found in store. Available products: ${availableProducts || 'none'}`);
+        }
+
+        iapLogger.info('PURCHASE', `Product ${productId} verified, proceeding with purchase. Available products: ${currentProducts.map(p => p.productId).join(', ')}`);
+
         // First, try to process any pending purchases for this product
         await get().actions.processPendingPurchases();
 
@@ -208,9 +237,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
 
         // Handle specific error cases
         if (errorMessage.includes('You already own this item')) {
-          console.log('Attempting to process existing purchase...');
+          console.log('Item already owned, processing silently...');
 
-          // Try to process pending purchases
+          // Process pending purchases silently without showing error
           try {
             await get().actions.processPendingPurchases();
 
@@ -218,13 +247,18 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
               purchaseState: { ...state.purchaseState, isLoading: false }
             }));
 
-            return true; // Consider it successful if we processed pending purchases
+            return true; // Consider it successful - don't show error to user
           } catch (pendingError) {
             console.log('Failed to process pending purchases:', pendingError);
-            errorMessage = 'Please try again in a moment.';
+            // Still return true to avoid showing error popup
+            set(state => ({
+              purchaseState: { ...state.purchaseState, isLoading: false }
+            }));
+            return true;
           }
         }
 
+        iapLogger.error('PURCHASE', 'Purchase failed in store', { productId, error: errorMessage });
         set(state => ({
           purchaseState: {
             ...state.purchaseState,
@@ -376,7 +410,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           return;
         }
 
-        // Mark transaction as being processed
+        // Mark transaction as being processed immediately to prevent duplicates
         set(state => ({
           processedTransactions: new Set([...state.processedTransactions, transactionKey])
         }));
@@ -388,6 +422,15 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         // Consume the purchase so it can be bought again
         await consumePurchase(purchase);
         iapLogger.transactionProcessed(transactionKey);
+
+        // Clear any purchase loading state
+        set(state => ({
+          purchaseState: {
+            ...state.purchaseState,
+            isLoading: false,
+            error: null
+          }
+        }));
 
       } catch (error) {
         console.log('Error processing purchase update:', error);
@@ -416,13 +459,23 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       if (error?.message) {
         errorMessage = error.message;
 
-        // Handle specific error cases
+        // Handle specific error cases - suppress "already own" errors
         if (error.message.includes('You already own this item')) {
-          errorMessage = 'This item is already owned. Please try again in a moment.';
-          // Trigger pending purchases processing
+          console.log('Suppressing "already own" error, processing silently...');
+          // Process pending purchases silently
           setTimeout(() => {
             get().actions.processPendingPurchases();
-          }, 1000);
+          }, 500);
+
+          // Don't show error to user for "already own" case
+          set(state => ({
+            purchaseState: {
+              ...state.purchaseState,
+              isLoading: false,
+              error: null // Clear error
+            }
+          }));
+          return;
         }
       }
 
@@ -490,6 +543,8 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         `Purchase State: ${JSON.stringify(state.purchaseState)}`,
         `Processed Transactions: ${state.processedTransactions.size}`,
         `Products: ${state.products.length}`,
+        `Product IDs: ${state.products.map(p => p.productId).join(', ')}`,
+        `Expected Product IDs: ${Object.values(PRODUCT_IDS).join(', ')}`,
         '',
         '=== TRANSACTION LOGS ===',
         logs,
@@ -499,6 +554,12 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       ].join('\n');
 
       return debugInfo;
+    },
+
+    // Method to force reload products (useful for debugging)
+    forceReloadProducts: async (): Promise<void> => {
+      iapLogger.info('DEBUG', 'Force reloading products...');
+      await get().actions.loadProducts();
     },
   },
 }));

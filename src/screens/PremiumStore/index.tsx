@@ -107,6 +107,25 @@ export const PremiumStoreScreen: React.FC = () => {
     );
   };
 
+  const handleForceReloadProducts = async () => {
+    if (purchaseState.isLoading) return;
+
+    try {
+      await actions.forceReloadProducts();
+      Alert.alert(
+        'Products Reloaded',
+        `Successfully reloaded ${products.length} products from store.`,
+        [{text: 'OK'}],
+      );
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'Failed to reload products. Check debug logs for details.',
+        [{text: 'OK'}],
+      );
+    }
+  };
+
   const formatCoins = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN').format(amount);
   };
@@ -282,7 +301,7 @@ export const PremiumStoreScreen: React.FC = () => {
     },
   });
 
-  if (isInitializing) {
+  if (isInitializing || !purchaseState.isInitialized) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -296,7 +315,7 @@ export const PremiumStoreScreen: React.FC = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <TextApp preset="txt16Regular" style={styles.loadingText}>
-            Connecting to store...
+            {isInitializing ? 'Connecting to store...' : 'Loading products...'}
           </TextApp>
         </View>
       </View>
@@ -402,13 +421,11 @@ export const PremiumStoreScreen: React.FC = () => {
                   disabled={
                     purchaseState.isLoading || !purchaseState.isInitialized
                   }>
-                  {/* {purchaseState.isLoading ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : ( */}
-                  <TextApp preset="txt16Bold" style={styles.purchaseButtonText}>
-                    Buy Now
-                  </TextApp>
-                  {/* )} */}
+                
+                    <TextApp preset="txt16Bold" style={styles.purchaseButtonText}>
+                      Buy Now
+                    </TextApp>
+               
                 </TouchableOpacity>
               </View>
             );
@@ -422,6 +439,18 @@ export const PremiumStoreScreen: React.FC = () => {
               Restore Purchases
             </TextApp>
           </TouchableOpacity>
+
+          {/* Debug button to reload products - only show in development */}
+          {__DEV__ && (
+            <TouchableOpacity
+              style={styles.restoreButton}
+              onPress={handleForceReloadProducts}
+              disabled={purchaseState.isLoading || !purchaseState.isInitialized}>
+              <TextApp style={styles.restoreButtonText}>
+                Reload Products ({products.length})
+              </TextApp>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={styles.privacyButton}
